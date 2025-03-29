@@ -11,4 +11,4 @@
     /db            -> Database setup (PostgreSQL)
     /env           -> Environment management
 /tests            -> Unit tests
-/deploy           -> Docker and deployment scripts
+/deploy           -> Docker and deployment scriptss
