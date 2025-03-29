@@ -1,0 +1,17 @@
+-->This is diagramatical flow for my application to find where the path was located and  to know  the
+responsibilities of each file
+
+/cmd
+/config
+/internal
+    /domain        -> Entities (User)
+    /usecase       -> Business logic (Authentication)
+    /repository    -> Database interactions
+    /delivery      -> HTTP handlers
+    /middleware    -> Authentication & error handling
+    /logger        -> Logging system
+/pkg
+    /db            -> Database setup (PostgreSQL)
+    /env           -> Environment management
+/tests            -> Unit tests
+/deploy           -> Docker and deployment scripts
