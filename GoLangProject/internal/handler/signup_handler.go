@@ -10,10 +10,10 @@ import (
 )
 
 type SignupHandler struct {
-	userUseCase *usecase.UserUseCase
+	userUseCase usecase.UserUseCaseInterface
 }
 
-func NewSignupHandler(userUseCase *usecase.UserUseCase) *SignupHandler {
+func NewSignupHandler(userUseCase usecase.UserUseCaseInterface) *SignupHandler {
 	return &SignupHandler{userUseCase: userUseCase}
 }
 
@@ -36,6 +36,7 @@ func (h *SignupHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		Password: req.Password,
 	}
 
+	// Ensure ValidateUser() exists in entity.User
 	if err := user.ValidateUser(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

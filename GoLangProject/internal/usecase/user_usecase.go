@@ -8,6 +8,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// Define an interface for UserUseCase
+type UserUseCaseInterface interface {
+	Signup(user *entity.User) (*entity.User, error)
+	Login(email, password string) (*entity.User, error)
+	GetUserByEmail(email string) (*entity.User, error)
+}
+
+// Ensure UserUseCase implements UserUseCaseInterface
+var _ UserUseCaseInterface = (*UserUseCase)(nil)
+
 type UserUseCase struct {
 	userRepo repository.UserRepository
 }
