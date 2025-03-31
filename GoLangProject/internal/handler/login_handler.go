@@ -2,7 +2,6 @@ package handler
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -44,9 +43,6 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		fmt.Println("🚨 Password mismatch! Received password:", req.Password)
-		fmt.Println("🚨 Stored hash:", user.Password)
-		fmt.Println("🚨 bcrypt error:", err)
 		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
