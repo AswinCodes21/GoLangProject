@@ -30,17 +30,23 @@ func (h *SignupHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := &entity.User{
+		FullName: req.FullName,
+		Email:    req.Email,
+		Password: req.Password,
+	}
+
+	if err := user.ValidateUser(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		http.Error(w, "Failed to hash password", http.StatusInternalServerError)
 		return
 	}
-
-	user := &entity.User{
-		FullName: req.FullName,
-		Email:    req.Email,
-		Password: string(hashedPassword),
-	}
+	user.Password = string(hashedPassword)
 
 	createdUser, err := h.userUseCase.Signup(user)
 	if err != nil {
