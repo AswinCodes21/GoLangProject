@@ -1,0 +1,29 @@
+# Ignore environment variables
+.env
+pkg/env/*.env
+
+
+# Ignore compiled binary files
+*.exe
+*.out
+*.o
+
+# Ignore Go vendor directory (if using Go modules)
+vendor/
+
+# Ignore build and cache directories
+bin/
+build/
+tmp/
+cache/
+
+# Ignore GoLand/VS Code settings (optional)
+.idea/
+.vscode/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore logs
+*.log

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
@@ -20,10 +21,20 @@ func ConnectDB() {
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_NAME"),
 	)
+
 	var err error
-	DB, err = sqlx.Connect("postgres", connStr)
-	if err != nil {
-		log.Fatal("Failed to connect to the database:", err)
+	for i := 0; i < 5; i++ {
+		DB, err = sqlx.Connect("postgres", connStr)
+		if err == nil {
+			break
+		}
+		log.Println("Failed to connect, retrying in 2 seconds...")
+		time.Sleep(2 * time.Second)
 	}
-	fmt.Println("Connected to the database")
+
+	if err != nil {
+		log.Fatal("Database connection failed:", err)
+	}
+
+	log.Println("Connected to the database successfully")
 }
