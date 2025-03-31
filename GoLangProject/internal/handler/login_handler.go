@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -13,10 +14,10 @@ import (
 )
 
 type LoginHandler struct {
-	userUseCase *usecase.UserUseCase
+	userUseCase usecase.UserUseCaseInterface
 }
 
-func NewLoginHandler(userUseCase *usecase.UserUseCase) *LoginHandler {
+func NewLoginHandler(userUseCase usecase.UserUseCaseInterface) *LoginHandler {
 	return &LoginHandler{userUseCase: userUseCase}
 }
 
@@ -29,37 +30,41 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
+type ErrorResponse struct {
+	Message string `json:"message"`
+}
+
 func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		writeJSONResponse(w, http.StatusBadRequest, ErrorResponse{"Invalid request body"})
 		return
 	}
 
 	user, err := h.userUseCase.GetUserByEmail(req.Email)
 	if err != nil {
-		http.Error(w, "User not found", http.StatusUnauthorized)
+		writeJSONResponse(w, http.StatusUnauthorized, ErrorResponse{"User not found"})
 		return
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
-		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
+		writeJSONResponse(w, http.StatusUnauthorized, ErrorResponse{"Invalid credentials"})
 		return
 	}
 
 	token, err := generateToken(user.ID)
 	if err != nil {
-		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		writeJSONResponse(w, http.StatusInternalServerError, ErrorResponse{"Failed to generate token"})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(LoginResponse{Token: token})
+	writeJSONResponse(w, http.StatusOK, LoginResponse{Token: token})
 }
 
 func generateToken(userID int) (string, error) {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
+		log.Println("Warning: JWT_SECRET is not set, using default secret")
 		secret = "default_secret"
 	}
 
@@ -70,4 +75,11 @@ func generateToken(userID int) (string, error) {
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))
+}
+
+// Utility function for writing JSON responses
+func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(data)
 }
