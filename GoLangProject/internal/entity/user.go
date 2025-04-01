@@ -1,6 +1,11 @@
 package entity
 
-import "github.com/go-playground/validator/v10"
+import (
+	"errors"
+	"regexp"
+
+	"github.com/go-playground/validator/v10"
+)
 
 type User struct {
 	ID       int    `db:"id"`
@@ -9,7 +14,25 @@ type User struct {
 	Password string `db:"password" validate:"required,min=6"`
 }
 
+func passwordComplexity(fl validator.FieldLevel) bool {
+	password := fl.Field().String()
+	uppercase := regexp.MustCompile(`[A-Z]`)
+	lowercase := regexp.MustCompile(`[a-z]`)
+	digit := regexp.MustCompile(`[0-9]`)
+
+	return uppercase.MatchString(password) && lowercase.MatchString(password) && digit.MatchString(password)
+}
+
 func (u *User) ValidateUser() error {
 	validate := validator.New()
-	return validate.Struct(u)
+
+	validate.RegisterValidation("password_complexity", passwordComplexity)
+
+	err := validate.Struct(u)
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
+			return errors.New("Validation failed: " + err.StructNamespace() + " " + err.Tag())
+		}
+	}
+	return nil
 }

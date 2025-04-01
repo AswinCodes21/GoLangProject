@@ -8,14 +8,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// Define an interface for UserUseCase
 type UserUseCaseInterface interface {
 	Signup(user *entity.User) (*entity.User, error)
 	Login(email, password string) (*entity.User, error)
 	GetUserByEmail(email string) (*entity.User, error)
+	GetAllUsers() ([]*entity.User, error)
 }
 
-// Ensure UserUseCase implements UserUseCaseInterface
 var _ UserUseCaseInterface = (*UserUseCase)(nil)
 
 type UserUseCase struct {
@@ -52,4 +51,8 @@ func (u *UserUseCase) Login(email, password string) (*entity.User, error) {
 
 func (u *UserUseCase) GetUserByEmail(email string) (*entity.User, error) {
 	return u.userRepo.GetUserByEmail(email)
+}
+
+func (u *UserUseCase) GetAllUsers() ([]*entity.User, error) {
+	return u.userRepo.GetAllUsers()
 }

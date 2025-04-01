@@ -36,9 +36,14 @@ func (h *SignupHandler) Signup(w http.ResponseWriter, r *http.Request) {
 		Password: req.Password,
 	}
 
-	// Ensure ValidateUser() exists in entity.User
 	if err := user.ValidateUser(); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	existingUser, err := h.userUseCase.GetUserByEmail(req.Email)
+	if err == nil && existingUser != nil {
+		http.Error(w, "Email already registered", http.StatusConflict)
 		return
 	}
 
@@ -51,7 +56,7 @@ func (h *SignupHandler) Signup(w http.ResponseWriter, r *http.Request) {
 
 	createdUser, err := h.userUseCase.Signup(user)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusConflict)
+		http.Error(w, "Error creating user: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

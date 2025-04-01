@@ -48,6 +48,7 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		log.Printf("Password comparison failed for user %s: %v", req.Email, err)
 		writeJSONResponse(w, http.StatusUnauthorized, ErrorResponse{"Invalid credentials"})
 		return
 	}
@@ -77,9 +78,10 @@ func generateToken(userID int) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
-// Utility function for writing JSON responses
 func writeJSONResponse(w http.ResponseWriter, statusCode int, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(data)
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		log.Printf("Error encoding response: %v", err)
+	}
 }
