@@ -7,6 +7,12 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type UserRepository interface {
+	CreateUser(user *entity.User) (*entity.User, error)
+	GetUserByEmail(email string) (*entity.User, error)
+	GetAllUsers() ([]*entity.User, error)
+}
+
 type userRepositoryImpl struct {
 	db *sqlx.DB
 }
@@ -32,4 +38,14 @@ func (r *userRepositoryImpl) GetUserByEmail(email string) (*entity.User, error) 
 		return nil, errors.New("user not found")
 	}
 	return &user, nil
+}
+
+func (r *userRepositoryImpl) GetAllUsers() ([]*entity.User, error) {
+	var users []*entity.User
+	query := `SELECT id, full_name, email, password FROM users`
+	err := r.db.Select(&users, query)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
 }
